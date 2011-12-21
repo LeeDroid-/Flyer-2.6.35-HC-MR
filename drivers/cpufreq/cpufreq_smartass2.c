@@ -43,7 +43,7 @@
  * towards the ideal frequency and slower after it has passed it. Similarly,
  * lowering the frequency towards the ideal frequency is faster than below it.
  */
-#define DEFAULT_AWAKE_IDEAL_FREQ 998400
+#define DEFAULT_AWAKE_IDEAL_FREQ 1036800
 static unsigned int awake_ideal_freq;
 
 /*
@@ -74,7 +74,7 @@ static unsigned int ramp_down_step;
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 50
+#define DEFAULT_MAX_CPU_LOAD 70
 static unsigned long max_cpu_load;
 
 /*
@@ -167,7 +167,7 @@ static
 struct cpufreq_governor cpufreq_gov_smartass2 = {
 	.name = "smartassV2",
 	.governor = cpufreq_governor_smartass,
-	.max_transition_latency = 9000000,
+	.max_transition_latency = 6000000,
 	.owner = THIS_MODULE,
 };
 
