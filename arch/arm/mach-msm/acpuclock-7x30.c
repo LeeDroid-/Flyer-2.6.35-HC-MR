@@ -106,11 +106,11 @@ static struct cpufreq_frequency_table freq_table[] = {
 #ifndef CONFIG_NUTTER
 	{ 16, CPUFREQ_TABLE_END },
 #else //CONFIG_NUTTER
-	{ 17, 1574400 },
-	{ 18, 1651200 },
-	{ 19, 1728000 },
-	{ 20, 1804800 },
-	{ 21, CPUFREQ_TABLE_END },
+	{ 16, 1574400 },
+	{ 17, 1651200 },
+	{ 18, 1728000 },
+	{ 19, 1804800 },
+	{ 20, CPUFREQ_TABLE_END },
 #endif
 };
 
