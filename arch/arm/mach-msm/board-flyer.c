@@ -1225,6 +1225,7 @@ static struct gpio_led gpio_led_config_XD2[] = {
 		.name = "white-portrait",
 		.gpio = PM8058_GPIO_PM_TO_SYS(FLYER_PEN_LED3),
 		.active_low = 0,
+		.default_state = LEDS_GPIO_DEFSTATE_ON,
 	},
 	{
 		.name = "amber-landscape",
@@ -1240,6 +1241,7 @@ static struct gpio_led gpio_led_config_XD2[] = {
 		.name = "white-landscape",
 		.gpio = PM8058_GPIO_PM_TO_SYS(FLYER_PEN_LED3),
 		.active_low = 0,
+		.default_state = LEDS_GPIO_DEFSTATE_ON,
 	},
 	{
 		.name = "green-camera",
@@ -3181,6 +3183,40 @@ static struct msm_spm_platform_data msm_spm_data __initdata = {
 	.vctl_timeout_us = 50,
 };
 
+static ssize_t flyer_virtual_keys_show(struct kobject *kobj,
+				       struct kobj_attribute *attr, char *buf)
+{
+	if (1 == board_mfg_mode()) {
+		return sprintf(buf,
+			__stringify(EV_KEY) ":" __stringify(KEY_RIGHTCTRL)":550:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)":425:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)":300:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_HOME)":165:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_RIGHTCTRL)":-35:1000:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)":-35:645:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)":-35:510:70:90"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_HOME)":-35:370:90:70"
+			"\n");
+	} else {
+		return sprintf(buf,
+			__stringify(EV_KEY) ":" __stringify(KEY_BACK)":425:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)":300:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_HOME)":165:1050:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_BACK)":-35:645:90:70"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_MENU)":-35:510:70:90"
+			":" __stringify(EV_KEY) ":" __stringify(KEY_HOME)":-35:370:90:70"
+			"\n");
+	}
+}
+
+static struct kobj_attribute flyer_virtual_keys_attr = {
+	.attr = {
+		.name = "virtualkeys.Ntrig-touchscreen",
+		.mode = S_IRUGO,
+	},
+	.show = &flyer_virtual_keys_show,
+};
+
 static ssize_t flyer_virtual_keys_pen_show(struct kobject *kobj,
 				       struct kobj_attribute *attr, char *buf)
 {
@@ -3199,6 +3235,7 @@ static struct kobj_attribute flyer_virtual_key_pen_attr = {
 };
 
 static struct attribute *flyer_properties_attrs[] = {
+	&flyer_virtual_keys_attr.attr,
 	&flyer_virtual_key_pen_attr.attr,
 	NULL
 };
