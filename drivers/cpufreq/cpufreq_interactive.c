@@ -24,6 +24,7 @@
 #include <linux/tick.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
+#include <linux/kthread.h>
 
 #include <asm/cputime.h>
 
@@ -57,13 +58,13 @@ static cpumask_t down_cpumask;
 static spinlock_t down_cpumask_lock;
 
 /* Go to max speed when CPU load at or above this value. */
-#define DEFAULT_GO_MAXSPEED_LOAD 70
+#define DEFAULT_GO_MAXSPEED_LOAD 85
 static unsigned long go_maxspeed_load;
 
 /*
-* The minimum amount of time to spend at a frequency before we can ramp down.
+ * The minimum amount of time to spend at a frequency before we can ramp down.
  */
-#define DEFAULT_MIN_SAMPLE_TIME 40000;
+#define DEFAULT_MIN_SAMPLE_TIME 80000;
 static unsigned long min_sample_time;
 
 #define DEBUG 0
@@ -185,7 +186,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 
 	if (!pcpu->governor_enabled)
 		goto exit;
- 
+
 	/*
 	 * Once pcpu->timer_run_time is updated to >= pcpu->idle_exit_time,
 	 * this lets idle exit know the current idle time sample has
@@ -208,7 +209,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 
 #if DEBUG
 	if ((int) jiffies - (int) pcpu->cpu_timer.expires >= 10)
-	  dbgpr("timer %d: late by %d ticks\n",
+		dbgpr("timer %d: late by %d ticks\n",
 		      (int) data, jiffies - pcpu->cpu_timer.expires);
 #endif
 
@@ -330,11 +331,11 @@ rearm:
 			data, &pcpu->idle_exit_time);
 		mod_timer(&pcpu->cpu_timer, jiffies + 2);
 		dbgpr("timer %d: set timer for %lu exit=%llu\n", (int) data, pcpu->cpu_timer.expires, pcpu->idle_exit_time);
- 	}
+	}
 
 exit:
 	return;
-	}
+}
 
 static void cpufreq_interactive_idle(void)
 {
@@ -425,7 +426,6 @@ static void cpufreq_interactive_idle(void)
 
 }
 
-
 static int cpufreq_interactive_up_task(void *data)
 {
 	unsigned int cpu;
@@ -508,7 +508,6 @@ static void cpufreq_interactive_freq_down(struct work_struct *work)
 	tmp_mask = down_cpumask;
 	cpumask_clear(&down_cpumask);
 	spin_unlock_irqrestore(&down_cpumask_lock, flags);
-	}
 
 	for_each_cpu(cpu, &tmp_mask) {
 		pcpu = &per_cpu(cpuinfo, cpu);
@@ -525,24 +524,23 @@ static void cpufreq_interactive_freq_down(struct work_struct *work)
 			get_cpu_idle_time_us(cpu,
 					     &pcpu->freq_change_time);
 		dbgpr("down %d: set tgt=%d (actual=%d)\n", cpu, pcpu->target_freq, pcpu->policy->cur);
- 	}
-+}
- 
+	}
+}
+
 static ssize_t show_go_maxspeed_load(struct kobject *kobj,
 				     struct attribute *attr, char *buf)
 {
 	return sprintf(buf, "%lu\n", go_maxspeed_load);
 }
- 
+
 static ssize_t store_go_maxspeed_load(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
 	return strict_strtoul(buf, 0, &go_maxspeed_load);
- }
- 
+}
+
 static struct global_attr go_maxspeed_load_attr = __ATTR(go_maxspeed_load, 0644,
 		show_go_maxspeed_load, store_go_maxspeed_load);
-
 
 static ssize_t show_min_sample_time(struct kobject *kobj,
 				struct attribute *attr, char *buf)
@@ -667,7 +665,7 @@ static int __init cpufreq_interactive_init(void)
 
 	/* No rescuer thread, bind to CPU queuing the work for possibly
 	   warm cache (probably doesn't matter much). */
-	down_wq = create_workqueue("kinteractive_down");
+	down_wq = create_workqueue("knteractive_down");
 
 	if (! down_wq)
 		goto err_freeuptask;
