@@ -1,0 +1,11 @@
+--- kernel/fork.c
++++ kernel/fork.c
+@@ -1319,7 +1319,7 @@
+ 		mmput(p->mm);
+ bad_fork_cleanup_signal:
+ 	if (!(clone_flags & CLONE_THREAD))
+-		put_signal_struct(p->signal);
++		free_signal_struct(p->signal);
+ bad_fork_cleanup_sighand:
+ 	__cleanup_sighand(p->sighand);
+ bad_fork_cleanup_fs:
