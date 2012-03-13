@@ -58,13 +58,13 @@ static cpumask_t down_cpumask;
 static spinlock_t down_cpumask_lock;
 
 /* Go to max speed when CPU load at or above this value. */
-#define DEFAULT_GO_MAXSPEED_LOAD 85
+#define DEFAULT_GO_MAXSPEED_LOAD 75
 static unsigned long go_maxspeed_load;
 
 /*
  * The minimum amount of time to spend at a frequency before we can ramp down.
  */
-#define DEFAULT_MIN_SAMPLE_TIME 80000;
+#define DEFAULT_MIN_SAMPLE_TIME 60000;
 static unsigned long min_sample_time;
 
 #define DEBUG 0
@@ -163,7 +163,7 @@ static
 struct cpufreq_governor cpufreq_gov_interactive = {
 	.name = "interactive",
 	.governor = cpufreq_governor_interactive,
-	.max_transition_latency = 10000000,
+	.max_transition_latency = 6000000,
 	.owner = THIS_MODULE,
 };
 
@@ -236,7 +236,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	delta_time = (unsigned int) cputime64_sub(pcpu->timer_run_time,
 						  pcpu->freq_change_time);
 
-	if (delta_idle > delta_time)
+	if ((delta_time == 0) || (delta_idle > delta_time))
 		load_since_change = 0;
 	else
 		load_since_change =
@@ -665,7 +665,7 @@ static int __init cpufreq_interactive_init(void)
 
 	/* No rescuer thread, bind to CPU queuing the work for possibly
 	   warm cache (probably doesn't matter much). */
-	down_wq = create_workqueue("knteractive_down");
+	down_wq = create_workqueue("kinteractive_down");
 
 	if (! down_wq)
 		goto err_freeuptask;
